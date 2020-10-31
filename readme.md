@@ -46,7 +46,7 @@ TypeError: render() got an unexpected keyword argument 'send_cookies_session'
 
 It raises because of the version difference of `requests_html`
 
-Please doing the following operations
+Please doing the following procedure
 
 ```
 pip uninstall requests_html
