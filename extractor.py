@@ -70,9 +70,9 @@ if __name__ == '__main__':
 		print('Usage: python extracting.py [config file]')
 		exit(0)
 	args = dict()
-	with open(argv[0], 'r') as f:
+	with open(argv[1], 'r') as f:
 		for line in f:
-			line = line.split(':')
+			line = line.split(',')
 			args[line[0]] = line[1].strip()
 
 	USER = args['USER']
