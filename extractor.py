@@ -4,8 +4,9 @@ import pandas as pd
 from sys import argv
 
 def login(session, user, password, login_url):
-	result = session.get(LOGIN_URL)
+	result = session.get(login_url)
 	auth = result.html.xpath('//input[@name="authenticity_token"]/@value', first=True)
+
 	payload = {
 		'authenticity_token': auth,
 		'session[email]': user,
@@ -15,7 +16,9 @@ def login(session, user, password, login_url):
 
 def extract_submissions(session, URL):
 	# Getting all submision elements
+
 	all_submissions = session.get(URL).html.find('td.table--primaryLink-small')
+
 	Name, Answer = [], []
 
 	for i, submission in enumerate(all_submissions):
@@ -84,6 +87,7 @@ if __name__ == '__main__':
 	# Starting
 	session = HTMLSession()
 	login(session, user=USER, password=PASS, login_url=LOGIN_URL)
+
 	answer_df = extract_submissions(session, SUBMISSION_URL)
 	student_df = get_student_info(session, INFO_URL)
 

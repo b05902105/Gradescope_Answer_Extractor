@@ -23,11 +23,11 @@ pip install -r requirements.txt --force-reinstall
 	E.G., 
 
 	```
-	LOGIN_URL: https://gradescope.com/login
-	INFO_URL: https://www.gradescope.com/courses/111/assignments/222/review_grades
-	SUBMISSION_URL: https://www.gradescope.com/courses/111/assignments/222/submissions
-	USER: haha@haha.edu.tw
-	PASS: hahahaha
+	LOGIN_URL, https://gradescope.com/login
+	INFO_URL, https://www.gradescope.com/courses/111/assignments/222/review_grades
+	SUBMISSION_URL, https://www.gradescope.com/courses/111/assignments/222/submissions
+	USER, haha@haha.edu.tw
+	PASS, hahahaha
 	```
 
 2. Execute the main process
