@@ -38,7 +38,7 @@ pip install -r requirements.txt --force-reinstall
 
 ## Exception
 
-If you're faced with some exception such that:
+If you're faced with some exceptions such that:
 
 ```
 TypeError: render() got an unexpected keyword argument 'send_cookies_session'
