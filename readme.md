@@ -35,3 +35,26 @@ pip install -r requirements.txt --force-reinstall
 	```
 	python3 extracting.py [config file]
 	```
+
+## Exception
+
+If you're faced with some exception such that:
+
+```
+TypeError: render() got an unexpected keyword argument 'send_cookies_session'
+```
+
+It raises because of the version difference of `requests_html`
+
+Please doing the following operations
+
+```
+pip uninstall requests_html
+git clone https://github.com/psf/requests-html
+cd requests-html
+python setup.py install
+cd ..
+rm -rf requests-html
+```
+
+By the above procedure, you can update your request-html to the latest version.
