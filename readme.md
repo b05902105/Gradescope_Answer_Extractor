@@ -12,7 +12,7 @@ pip install -r requirements.txt --force-reinstall
 
 1. Set the configuration:
 
-	Please fill-in the following config information in `config` before extracting. (Please use ":" as a delimiter)
+	Please fill-in the following config information in `config` before extracting. (Please use "," as a delimiter)
 
 	* **LOGIN_URL**: In general, it should be `https://www.gradescope.com/login`.
 	* **INFO_URL**: The url recording students information. In general, it should be the `Review Grades` page.
