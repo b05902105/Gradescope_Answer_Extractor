@@ -91,5 +91,5 @@ if __name__ == '__main__':
 	answer_df = extract_submissions(session, SUBMISSION_URL)
 	student_df = get_student_info(session, INFO_URL)
 
-	df = pd.concat([student_df, answer_df.iloc], axis=1)
+	df = pd.concat([student_df, answer_df], axis=1)
 	df.to_csv('answer.csv', index=False)
