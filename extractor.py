@@ -34,11 +34,12 @@ def extract_submissions(session, URL):
 
 		# Processing answer
 		options = result.html.find('input[aria-checked]')
-		raw_ans = np.array([1 if opt.attrs['aria-checked']=='true' else 0 for opt in options]).reshape(20, 5)
+		raw_ans = np.array([1 if opt.attrs['aria-checked']=='true' else 0 for opt in options]).reshape(20, 6)
 
 		# If no answer, fill-in 0
 		ans = np.argmax(raw_ans, axis=1) + 1
 		ans[np.sum(raw_ans, axis=1) == 0] = 0
+		ans[ans == 6] = 0
 		Answer.append(ans)
 	print()
 
