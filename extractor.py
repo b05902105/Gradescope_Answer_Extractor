@@ -30,7 +30,7 @@ def extract_submissions(session, URL):
 
 		# Getting & rendering the answer page.
 		result = session.get(link)
-		result.html.render(send_cookies_session=True, timeout=20)
+		result.html.render(send_cookies_session=True, timeout=50)
 
 		# Processing answer
 		options = result.html.find('input[aria-checked]')
