@@ -101,6 +101,6 @@ if __name__ == '__main__':
 	df.to_csv('answer.csv', index=False)
 
 	# Export Error List
-	error_frame = student_df.loc(error)
+	error_frame = student_df.loc(student_df['Name'].isin(error))
 	error_frame.to_csv('error.csv', index=False)
 	
