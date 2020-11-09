@@ -45,7 +45,7 @@ def extract_submissions(session, URL):
 		except:
 			print('\nError: Name:', Name[-1])
 			Error.append(Name[-1])
-			Answer.append(np.zeros(20, 6))
+			Answer.append(np.zeros(20))
 	print()
 
 	df = pd.DataFrame(np.array(Answer), columns=['Problem %02d' % n for n in range(1, 21)])
