@@ -14,51 +14,23 @@ def login(session, user, password, login_url):
 	}
 	session.post(login_url, data = payload)
 
-def extract_submissions(session, URL):
-	# Getting all submision elements
+def extract_submission(session, URL):
+	result = session.get(URL)
+	result.html.render(send_cookies_session=True, timeout=100)
 
-	all_submissions = session.get(URL).html.find('td.table--primaryLink-small')
+	options = result.html.find('input[aria-checked]')
+	raw_ans = np.array([1 if opt.attrs['aria-checked'] == 'true' else 0 for opt in options]).reshape(20, 6)
 
-	Name, Answer, Error = [], [], []
-
-	for i, submission in enumerate(all_submissions):
-		print('Extracting submissions: %03d/%03d' % (i+1, len(all_submissions)), end='\r')
-
-		# Extracting links, user name
-		link = list(submission.absolute_links)[0]
-		Name.append(submission.text)
-
-		# Getting & rendering the answer page.
-		try:
-			result = session.get(link)
-			result.html.render(send_cookies_session=True, timeout=20)
-
-			# Processing answer
-			options = result.html.find('input[aria-checked]')
-			raw_ans = np.array([1 if opt.attrs['aria-checked']=='true' else 0 for opt in options]).reshape(20, 6)
-
-			# If no answer, fill-in 0
-			ans = np.argmax(raw_ans, axis=1) + 1
-			ans[np.sum(raw_ans, axis=1) == 0] = 0
-			ans[ans == 6] = 0
-			Answer.append(ans)
-		except:
-			print('\nError: Name:', Name[-1])
-			Error.append(Name[-1])
-			Answer.append(np.zeros(20))
-	print()
-
-	df = pd.DataFrame(np.array(Answer), columns=['Problem %02d' % n for n in range(1, 21)])
-	df.insert(loc=0, column='Name', value=Name)
-
-	return df.sort_values(by=['Name']), Error
-
-def get_student_info(session, URL):
-	all_students = session.get(URL).html.find('tr')
+	ans = np.argmax(raw_ans, axis=1) + 1
+	ans[np.sum(raw_ans, axis=1) == 0] = 0
+	ans[ans == 6] = 0
+	return ans
+		
+def get_student_info(session, student_list):
 	
-	Name, Email, Sid, Time = [], [], [], []
-	for i, student in enumerate(all_students):
-		print('Extracting students info: %03d/%03d' % (i+1, len(all_students)), end='\r')
+	Name, Email, Sid, Time, Answer = [], [], [], [], []
+	for i, student in enumerate(student_list):
+		print('Extracting students info: %03d/%03d' % (i+1, len(student_list)), end='\r')
 		status = student.find('td')
 
 		# If finding, this student didn't submit any answer.
@@ -67,9 +39,17 @@ def get_student_info(session, URL):
 			Email.append(status[1].text)
 			Sid.append(Email[-1].split('@')[0])
 			Time.append(status[-1].text)
+			Answer.append(extract_submission(session, list(status[0].absolute_links)[0]))
 	print()
-	df = pd.DataFrame({'Name': Name, 'Email': Email, 'Student ID': Sid, 'Time': Time})
-	return df.sort_values(by = ['Name'])
+
+	if Name:
+		df = pd.DataFrame({'Name': Name, 'Email': Email, 'Student ID': Sid, 'Time': Time})
+		ans_df = pd.DataFrame(np.array(Answer), columns=['Problem %02d' % n for n in range(1, 21)])
+		return pd.concat([df, ans_df], axis=1)
+	return None
+
+def get_student_list(session, URL):
+	return session.get(URL).html.find('tr')
 
 
 if __name__ == '__main__':
@@ -94,13 +74,22 @@ if __name__ == '__main__':
 	session = HTMLSession()
 	login(session, user=USER, password=PASS, login_url=LOGIN_URL)
 
-	answer_df, error = extract_submissions(session, SUBMISSION_URL)
-	student_df = get_student_info(session, INFO_URL)
+	partial_df = list()
+	student_list = get_student_list(session, INFO_URL)
+	print('Total # students: %03d' % (len(student_list)))
 
-	df = pd.concat([student_df, answer_df], axis=1)
-	df.to_csv('answer.csv', index=False)
+	for i in range(0, len(student_list), 100):
 
-	# Export Error List
-	error_frame = student_df.loc(student_df['Name'].isin(error))
-	error_frame.to_csv('error.csv', index=False)
-	
+		print('Students %03d ~ %03d' % (i+1, min(i+100, len(student_list))))
+		
+		df = get_student_info(session, student_list[i: i+100])
+		partial_df.append(df)
+
+		# Restarting
+		session.close()
+		session = HTMLSession()
+		login(session, user=USER, password=PASS, login_url=LOGIN_URL)
+
+	partial_df = list(filter(None, partial_df))
+	total_df = pd.concat(partial_df, axis=0)
+	total_df.to_csv('answer.csv', index=False)
