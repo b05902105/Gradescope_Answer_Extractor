@@ -19,7 +19,7 @@ def extract_submissions(session, URL):
 
 	all_submissions = session.get(URL).html.find('td.table--primaryLink-small')
 
-	Name, Answer = [], []
+	Name, Answer, Error = [], [], []
 
 	for i, submission in enumerate(all_submissions):
 		print('Extracting submissions: %03d/%03d' % (i+1, len(all_submissions)), end='\r')
@@ -29,24 +29,29 @@ def extract_submissions(session, URL):
 		Name.append(submission.text)
 
 		# Getting & rendering the answer page.
-		result = session.get(link)
-		result.html.render(send_cookies_session=True, timeout=50)
+		try:
+			result = session.get(link)
+			result.html.render(send_cookies_session=True, timeout=20)
 
-		# Processing answer
-		options = result.html.find('input[aria-checked]')
-		raw_ans = np.array([1 if opt.attrs['aria-checked']=='true' else 0 for opt in options]).reshape(20, 6)
+			# Processing answer
+			options = result.html.find('input[aria-checked]')
+			raw_ans = np.array([1 if opt.attrs['aria-checked']=='true' else 0 for opt in options]).reshape(20, 6)
 
-		# If no answer, fill-in 0
-		ans = np.argmax(raw_ans, axis=1) + 1
-		ans[np.sum(raw_ans, axis=1) == 0] = 0
-		ans[ans == 6] = 0
-		Answer.append(ans)
+			# If no answer, fill-in 0
+			ans = np.argmax(raw_ans, axis=1) + 1
+			ans[np.sum(raw_ans, axis=1) == 0] = 0
+			ans[ans == 6] = 0
+			Answer.append(ans)
+		except:
+			print('\nError: Name:', Name[-1])
+			Error.append(Name[-1])
+			Answer.append(np.zeros(20, 6))
 	print()
 
 	df = pd.DataFrame(np.array(Answer), columns=['Problem %02d' % n for n in range(1, 21)])
 	df.insert(loc=0, column='Name', value=Name)
 
-	return df.sort_values(by=['Name'])
+	return df.sort_values(by=['Name']), Error
 
 def get_student_info(session, URL):
 	all_students = session.get(URL).html.find('tr')
@@ -89,8 +94,13 @@ if __name__ == '__main__':
 	session = HTMLSession()
 	login(session, user=USER, password=PASS, login_url=LOGIN_URL)
 
-	answer_df = extract_submissions(session, SUBMISSION_URL)
+	answer_df, error = extract_submissions(session, SUBMISSION_URL)
 	student_df = get_student_info(session, INFO_URL)
 
 	df = pd.concat([student_df, answer_df], axis=1)
 	df.to_csv('answer.csv', index=False)
+
+	# Export Error List
+	error_frame = student_df.loc(error)
+	error_frame.to_csv('error.csv', index=False)
+	
