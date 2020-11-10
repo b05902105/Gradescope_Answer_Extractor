@@ -90,6 +90,6 @@ if __name__ == '__main__':
 		session = HTMLSession()
 		login(session, user=USER, password=PASS, login_url=LOGIN_URL)
 
-	partial_df = list(filter(None, partial_df))
+	partial_df = [x for x in partial_df if x is not None]
 	total_df = pd.concat(partial_df, axis=0)
 	total_df.to_csv('answer.csv', index=False)
